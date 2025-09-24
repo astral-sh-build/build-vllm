@@ -84,7 +84,7 @@ jobs:
             "delocate-wheel --ignore-missing-dependencies -w {dest_dir} -v
             {wheel}"
           CIBW_ENVIRONMENT_LINUX: VLLM_TARGET_DEVICE=cpu
-            UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
+            UV_INDEX_URL=https://download.pytorch.org/whl/cpu
             UV_INDEX_STRATEGY=unsafe-best-match
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
 
