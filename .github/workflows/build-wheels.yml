@@ -1,0 +1,105 @@
+name: Build wheels
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+on:
+  workflow_dispatch:
+    inputs:
+      vllm_version:
+        description: "vLLM version"
+        required: true
+        default: "v0.10.2"
+        type: string
+  pull_request:
+    branches:
+      - main
+  release:
+    types: [created]
+
+jobs:
+  build_wheels:
+    name: Build wheels on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    env:
+      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.10.2') }}
+    strategy:
+      matrix:
+        os:
+          - depot-ubuntu-24.04-16
+          - depot-ubuntu-24.04-arm-16
+          - macos-latest
+        python-version:
+          - "3.10"
+          - "3.11"
+          - "3.12"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          repository: vllm-project/vllm
+          ref: ${{ env.VLLM_VERSION }}
+          persist-credentials: false
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6
+        with:
+          enable-cache: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install cibuildwheel
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install cibuildwheel
+
+      - name: Build wheels
+        run: |
+          python3 -m cibuildwheel --output-dir dist
+        env:
+          CIBW_BUILD_MACOS: cp312-*
+          CIBW_BUILD_WINDOWS: cp312-*
+          CIBW_BUILD_LINUX: cp312-*
+          CIBW_BEFORE_BUILD_LINUX: yum install -y numactl-devel
+          CIBW_PROJECT_REQUIRES_PYTHON: ">=3.12,<3.13"
+          CIBW_BUILD_FRONTEND: "build[uv]"
+          CIBW_ARCHS: native
+          CIBW_SKIP: "*musllinux*"
+          CIBW_REPAIR_WHEEL_COMMAND_LINUX:
+            "auditwheel repair -w /tmp/cibuildwheel/repaired_wheel {wheel}
+            --exclude libcuda.so --exclude libcuda.so.1 --exclude libc10.so
+            --exclude libc10_cuda.so --exclude libtorch.so --exclude
+            libtorch_python.so --exclude libtorch_cpu.so --exclude
+            libtorch_cuda.so --exclude libtorch_cuda_cpp.so --exclude
+            libtorch_cuda_cu.so --exclude libcudart.so.11 --exclude
+            libcudart.so.12 --exclude libcudart.so.11.0 --exclude
+            libcudart.so.12.0 --exclude libcurand.so.10 --exclude
+            libcufile_rdma.so --exclude libcufile_rdma.so.1 --exclude
+            libcufile.so.1 --exclude libcufile.so.0 --exclude libcufile.so"
+          CIBW_REPAIR_WHEEL_COMMAND_MACOS:
+            "delocate-wheel --ignore-missing-dependencies -w {dest_dir} -v
+            {wheel}"
+          CIBW_ENVIRONMENT_LINUX: VLLM_TARGET_DEVICE=cpu
+            UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
+            UV_INDEX_STRATEGY=unsafe-best-match
+          CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
+
+      - uses: actions/upload-artifact@v4
+        if: github.event_name != 'release'
+        with:
+          name: cibw-wheels-${{ matrix.os }}-${{ strategy.job-index }}
+          path: ./dist/*.whl
+
+      - name: Upload wheels to release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2
+        with:
+          files: ./dist/*.whl
+          tag_name: ${{ github.ref_name }}

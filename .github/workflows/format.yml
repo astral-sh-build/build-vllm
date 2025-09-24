@@ -1,0 +1,26 @@
+name: Format
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - "**.yml"
+      - "**.yaml"
+
+jobs:
+  prettier:
+    name: Prettier
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npx prettier@3.6.2 --check "**/*.{json5,jsonc,json,yaml,yml,mjs,js,jsx,ts,tsx}"
+      - run: npx prettier@3.6.2 --check --prose-wrap always "**/*.{mdx,md}"
