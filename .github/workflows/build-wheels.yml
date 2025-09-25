@@ -30,8 +30,8 @@ jobs:
     strategy:
       matrix:
         os:
-          - depot-ubuntu-24.04-16
-          - depot-ubuntu-24.04-arm-16
+          - depot-ubuntu-24.04
+          - depot-ubuntu-24.04-arm
           - macos-latest
         python-version:
           - "cp310"
@@ -86,6 +86,9 @@ jobs:
           CIBW_ENVIRONMENT_LINUX: VLLM_TARGET_DEVICE=cpu
             UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
             UV_INDEX_STRATEGY=unsafe-best-match
+            VLLM_CPU_AVX512BF16=false
+            VLLM_CPU_AVX512VNNI=false
+            VLLM_CPU_DISABLE_AVX512=true
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
 
       - uses: actions/upload-artifact@v4
