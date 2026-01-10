@@ -13,7 +13,7 @@ on:
       vllm_version:
         description: "vLLM version"
         required: true
-        default: "v0.11.1"
+        default: "v0.13.0"
         type: string
   pull_request:
     branches:
@@ -27,7 +27,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-build') }}
     env:
-      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.10.2') }}
+      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.13.0') }}
     strategy:
       matrix:
         os:
@@ -41,7 +41,7 @@ jobs:
           - "cp313"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: vllm-project/vllm
           ref: ${{ env.VLLM_VERSION }}
@@ -53,7 +53,7 @@ jobs:
           enable-cache: false
 
       - name: Set up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@e797f83bcb11b83ae66e0230d6156d7c80228e7c # v6.0.0
         with:
           python-version: "3.12"
 
@@ -93,7 +93,7 @@ jobs:
             VLLM_CPU_DISABLE_AVX512=true
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: github.event_name != 'release'
         with:
           name: cibw-wheels-${{ matrix.os }}-${{ matrix.python-version }}
@@ -101,7 +101,7 @@ jobs:
 
       - name: Upload wheels to release
         if: github.event_name == 'release'
-        uses: softprops/action-gh-release@6cbd405e2c4e67a21c47fa9e383d020e4e28b836 # v2
+        uses: softprops/action-gh-release@6da8fa9354ddfdc4aeace5fc48d7f679b5214090 # v2.4.1
         with:
           files: ./dist/*.whl
           tag_name: ${{ github.ref_name }}
