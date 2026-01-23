@@ -41,11 +41,21 @@ jobs:
           - "cp313"
 
     steps:
+      - name: Checkout build scripts
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          path: build-repo
+          persist-credentials: false
+
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
           repository: vllm-project/vllm
           ref: ${{ env.VLLM_VERSION }}
           persist-credentials: false
+
+      - name: Get source commit SHA
+        id: source-commit
+        run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
 
       - name: Install the latest version of uv
         uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6
@@ -92,6 +102,20 @@ jobs:
             VLLM_CPU_AVX512VNNI=false
             VLLM_CPU_DISABLE_AVX512=true
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
+
+      - name: Embed SBOM into wheel
+        run: |
+          for wheel in dist/*.whl; do
+            uv run --script build-repo/build_scripts/embed_patches.py "$wheel" "build-repo/build_scripts/patches/${VLLM_VERSION}" \
+              --source-repo "https://github.com/vllm-project/vllm" \
+              --source-tag "${VLLM_VERSION}" \
+              --source-commit "${SOURCE_COMMIT}" \
+              --build-repo "https://github.com/astral-sh/build-vllm" \
+              --build-commit "${BUILD_COMMIT}"
+          done
+        env:
+          SOURCE_COMMIT: ${{ steps.source-commit.outputs.sha }}
+          BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: github.event_name != 'release'
