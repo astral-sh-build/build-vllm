@@ -71,7 +71,7 @@ def compute_hash(content: bytes) -> str:
 
 def embed_sbom(
     wheel_path: Path,
-    patches_dir: Path,
+    patches_dir: Path | None,
     source_repo: str,
     source_tag: str,
     source_commit: str,
@@ -80,7 +80,7 @@ def embed_sbom(
 ) -> None:
     """Embed an SBOM into a wheel file."""
     # Find all .patch files.
-    patch_files = sorted(patches_dir.glob("*.patch"))
+    patch_files = sorted(patches_dir.glob("*.patch")) if patches_dir else []
 
     # Build the SBOM.
     sbom = {
@@ -165,12 +165,12 @@ def main() -> None:
     if not args.wheel.exists():
         parser.error(f"Wheel not found: {args.wheel}")
 
-    if not args.patches_dir.exists():
-        parser.error(f"Patches directory not found: {args.patches_dir}")
+    # If patches directory doesn't exist, use None to indicate no patches
+    patches_dir = args.patches_dir if args.patches_dir.exists() else None
 
     embed_sbom(
         args.wheel,
-        args.patches_dir,
+        patches_dir,
         source_repo=args.source_repo,
         source_tag=args.source_tag,
         source_commit=args.source_commit,
