@@ -1,11 +1,6 @@
 name: Build wheels
 
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
-  cancel-in-progress: true
-
-permissions:
-  contents: write
+permissions: {}
 
 on:
   workflow_dispatch:
@@ -21,24 +16,50 @@ on:
   release:
     types: [created]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref_name }}-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: true
+
 jobs:
-  build_wheels:
-    name: Build wheels on ${{ matrix.os }} (${{ matrix.python-version }})
-    runs-on: ${{ matrix.os }}
+  plan-matrix:
+    name: Plan vLLM build matrix
+    runs-on: ubuntu-latest
     if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-build') }}
+    permissions:
+      contents: read
+    outputs:
+      matrix: ${{ steps.generate-matrix.outputs.matrix }}
+    steps:
+      - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
+        with:
+          persist-credentials: false
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6
+
+      - name: Generate build matrix
+        id: generate-matrix
+        run: |
+          echo "matrix=$(uv run --script plan-matrix.py)" >> $GITHUB_OUTPUT
+        env:
+          LIMIT_MATRIX: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-build') && '1' || '0' }}
+
+  build_wheels:
+    name: Build wheels on ${{ matrix.RUNNER }} (${{ matrix.python-version }})
+    needs: [plan-matrix]
+    runs-on: ${{ matrix.RUNNER }}
+    if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-build') }}
+
+    permissions:
+      contents: write
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include: ${{ fromJSON(needs.plan-matrix.outputs.matrix) }}
+
     env:
       VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.13.0') }}
-    strategy:
-      matrix:
-        os:
-          - depot-ubuntu-24.04
-          - depot-ubuntu-24.04-arm
-          - macos-latest
-        python-version:
-          - "cp310"
-          - "cp311"
-          - "cp312"
-          - "cp313"
 
     steps:
       - name: Checkout vllm
@@ -121,7 +142,7 @@ jobs:
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: github.event_name != 'release'
         with:
-          name: cibw-wheels-${{ matrix.os }}-${{ matrix.python-version }}
+          name: cibw-wheels-${{ matrix.RUNNER }}-${{ matrix.python-version }}
           path: ./dist/*.whl
 
       - name: Upload wheels to release
