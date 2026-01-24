@@ -25,7 +25,14 @@ jobs:
   build_wheels:
     name: Build wheels on ${{ matrix.os }} (${{ matrix.python-version }})
     runs-on: ${{ matrix.os }}
-    if: ${{ !contains(github.event.pull_request.labels.*.name, 'no-build') }}
+    # Skip if no-build label; for PRs without full-build label, only run first matrix entry
+    if: >-
+      !contains(github.event.pull_request.labels.*.name, 'no-build') &&
+      (
+        github.event_name != 'pull_request' ||
+        contains(github.event.pull_request.labels.*.name, 'full-build') ||
+        (matrix.os == 'depot-ubuntu-24.04' && matrix.python-version == 'cp313')
+      )
     env:
       VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.13.0') }}
     strategy:
@@ -106,7 +113,7 @@ jobs:
       - name: Embed SBOM into wheel
         run: |
           for wheel in dist/*.whl; do
-            uv run --script build-repo/build_scripts/embed_patches.py "$wheel" "build-repo/build_scripts/patches/${VLLM_VERSION}" \
+            uv run --no-project --script build-repo/build_scripts/embed_patches.py "$wheel" "build-repo/build_scripts/patches/${VLLM_VERSION}" \
               --source-repo "https://github.com/vllm-project/vllm" \
               --source-tag "${VLLM_VERSION}" \
               --source-commit "${SOURCE_COMMIT}" \
