@@ -51,7 +51,7 @@ jobs:
       - name: Checkout build scripts
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
         with:
-          path: build-repo
+          path: build_scripts
           persist-credentials: false
 
       - name: Get source commit SHA
@@ -107,7 +107,7 @@ jobs:
       - name: Embed SBOM into wheel
         run: |
           for wheel in dist/*.whl; do
-            uv run --no-project --script build-repo/build_scripts/embed_patches.py "$wheel" "build-repo/build_scripts/patches/${VLLM_VERSION}" \
+            uv run --no-project --script build_scripts/embed_patches.py "$wheel" "build_scripts/patches/${VLLM_VERSION}" \
               --source-repo "https://github.com/vllm-project/vllm" \
               --source-tag "${VLLM_VERSION}" \
               --source-commit "${SOURCE_COMMIT}" \
