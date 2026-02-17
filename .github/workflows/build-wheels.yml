@@ -8,7 +8,7 @@ on:
       vllm_version:
         description: "vLLM version"
         required: true
-        default: "v0.13.0"
+        default: "v0.15.1"
         type: string
   pull_request:
     branches:
@@ -61,7 +61,7 @@ jobs:
         include: ${{ fromJSON(needs.plan-matrix.outputs.matrix) }}
 
     env:
-      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.13.0') }}
+      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.15.1') }}
 
     steps:
       - name: Checkout vllm
@@ -102,8 +102,12 @@ jobs:
           python3 -m cibuildwheel --output-dir dist
         env:
           CIBW_BUILD: ${{ matrix.python-version }}-*
-          CIBW_BEFORE_BUILD_LINUX: yum install -y numactl-devel
-          CIBW_BUILD_FRONTEND: "build[uv]"
+          CIBW_BEFORE_BUILD_LINUX: >
+            yum install -y numactl-devel &&
+            uv pip install --system -r requirements/cpu-build.txt
+          CIBW_BEFORE_BUILD_MACOS: >
+            uv pip install --system -r requirements/cpu-build.txt
+          CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX:
