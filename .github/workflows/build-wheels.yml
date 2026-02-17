@@ -125,7 +125,7 @@ jobs:
             yum install -y numactl-devel &&
             uv pip install --system -r requirements/cpu-build.txt
           CIBW_BEFORE_BUILD_MACOS: >
-            uv pip install --system -r requirements/cpu-build.txt
+            uv pip install -r requirements/cpu-build.txt
           CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"
