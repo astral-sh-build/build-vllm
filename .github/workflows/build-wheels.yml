@@ -60,15 +60,34 @@ jobs:
       matrix:
         include: ${{ fromJSON(needs.plan-matrix.outputs.matrix) }}
 
-    env:
-      VLLM_VERSION: ${{ github.event_name == 'release' && github.ref_name || (github.event_name == 'workflow_dispatch' && inputs.vllm_version || 'v0.15.1') }}
-
     steps:
+      - name: Determine vLLM version
+        id: vllm-version
+        run: |
+          # Extract vLLM version from tag. Tags can be either:
+          # - v0.15.1 (legacy format; maps directly to vLLM version)
+          # - v0.15.1-r1 (new format; strip -rN suffix to get vLLM version)
+          if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
+            TAG="${GITHUB_REF_NAME}"
+            # Remove -rN suffix if present
+            VLLM_VERSION="${TAG%-r*}"
+          elif [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            VLLM_VERSION="${INPUTS_VLLM_VERSION}"
+          else
+            VLLM_VERSION="v0.15.1"
+          fi
+          echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
+          echo "Using vLLM version: ${VLLM_VERSION}"
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+          INPUTS_VLLM_VERSION: ${{ inputs.vllm_version }}
+
       - name: Checkout vllm
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: vllm-project/vllm
-          ref: ${{ env.VLLM_VERSION }}
+          ref: ${{ steps.vllm-version.outputs.version }}
           persist-credentials: false
 
       - name: Checkout build scripts
@@ -106,7 +125,7 @@ jobs:
             yum install -y numactl-devel &&
             uv pip install --system -r requirements/cpu-build.txt
           CIBW_BEFORE_BUILD_MACOS: >
-            uv pip install --system -r requirements/cpu-build.txt
+            uv pip install -r requirements/cpu-build.txt
           CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"
@@ -143,6 +162,7 @@ jobs:
               --build-commit "${BUILD_COMMIT}"
           done
         env:
+          VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
           SOURCE_COMMIT: ${{ steps.source-commit.outputs.sha }}
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
