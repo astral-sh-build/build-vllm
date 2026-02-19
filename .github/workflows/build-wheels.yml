@@ -163,7 +163,9 @@ jobs:
             VLLM_CPU_AVX512BF16=false
             VLLM_CPU_AVX512VNNI=false
             VLLM_CPU_DISABLE_AVX512=true
+            SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
+            SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
 
       - name: Embed SBOM into wheel
         run: |
