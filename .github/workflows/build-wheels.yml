@@ -96,6 +96,17 @@ jobs:
           path: build_scripts
           persist-credentials: false
 
+      - name: Apply patches
+        run: |
+          if [ -d "build_scripts/patches/${{ steps.vllm-version.outputs.version }}" ]; then
+            for patch in build_scripts/patches/${{ steps.vllm-version.outputs.version }}/*.patch; do
+              if [ -f "$patch" ]; then
+                echo "Applying patch: $patch"
+                patch -p1 -i "$patch"
+              fi
+            done
+          fi
+
       - name: Get source commit SHA
         id: source-commit
         run: echo "sha=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
