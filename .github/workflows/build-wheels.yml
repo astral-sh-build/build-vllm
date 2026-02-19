@@ -98,14 +98,16 @@ jobs:
 
       - name: Apply patches
         run: |
-          if [ -d "build_scripts/patches/${{ steps.vllm-version.outputs.version }}" ]; then
-            for patch in build_scripts/patches/${{ steps.vllm-version.outputs.version }}/*.patch; do
+          if [ -d "build_scripts/patches/${VLLM_VERSION}" ]; then
+            for patch in build_scripts/patches/${VLLM_VERSION}/*.patch; do
               if [ -f "$patch" ]; then
                 echo "Applying patch: $patch"
                 patch -p1 -i "$patch"
               fi
             done
           fi
+        env:
+          VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
 
       - name: Get source commit SHA
         id: source-commit
