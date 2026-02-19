@@ -8,7 +8,7 @@ on:
       vllm_version:
         description: "vLLM version"
         required: true
-        default: "v0.15.1"
+        default: "v0.16.0"
         type: string
   pull_request:
     branches:
@@ -65,8 +65,8 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.15.1 (legacy format; maps directly to vLLM version)
-          # - v0.15.1-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.16.0 (legacy format; maps directly to vLLM version)
+          # - v0.16.0-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
             TAG="${GITHUB_REF_NAME}"
             # Remove -rN suffix if present
@@ -74,7 +74,7 @@ jobs:
           elif [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             VLLM_VERSION="${INPUTS_VLLM_VERSION}"
           else
-            VLLM_VERSION="v0.15.1"
+            VLLM_VERSION="v0.16.0"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -95,6 +95,19 @@ jobs:
         with:
           path: build_scripts
           persist-credentials: false
+
+      - name: Apply patches
+        run: |
+          if [ -d "build_scripts/patches/${VLLM_VERSION}" ]; then
+            for patch in build_scripts/patches/${VLLM_VERSION}/*.patch; do
+              if [ -f "$patch" ]; then
+                echo "Applying patch: $patch"
+                patch -p1 -i "$patch"
+              fi
+            done
+          fi
+        env:
+          VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
 
       - name: Get source commit SHA
         id: source-commit
