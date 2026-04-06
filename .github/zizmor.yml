@@ -1,0 +1,5 @@
+rules:
+  # TODO(charlie): Replace `softprops/action-gh-release` with `gh release upload`.
+  superfluous-actions:
+    ignore:
+      - build-wheels.yml
