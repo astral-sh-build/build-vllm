@@ -38,6 +38,7 @@ jobs:
         uses: astral-sh/setup-uv@6b9c6063abd6010835644d4c2e1bef4cf5cd0fca # v6
         with:
           version: "0.9.26"
+          enable-cache: false
 
       - name: Generate build matrix
         id: generate-matrix
@@ -168,6 +169,7 @@ jobs:
             VLLM_CPU_DISABLE_AVX512=true
             SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
+            UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
 
       - name: Embed SBOM into wheel
