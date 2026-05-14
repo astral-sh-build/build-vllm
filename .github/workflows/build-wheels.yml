@@ -8,7 +8,7 @@ on:
       vllm_version:
         description: "vLLM version"
         required: true
-        default: "v0.19.1"
+        default: "v0.20.2"
         type: string
   pull_request:
     branches:
@@ -65,8 +65,8 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.19.1 (legacy format; maps directly to vLLM version)
-          # - v0.19.1-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.20.2 (legacy format; maps directly to vLLM version)
+          # - v0.20.2-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "release" ]; then
             TAG="${GITHUB_REF_NAME}"
             # Remove -rN suffix if present
@@ -74,7 +74,7 @@ jobs:
           elif [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             VLLM_VERSION="${INPUTS_VLLM_VERSION}"
           else
-            VLLM_VERSION="v0.19.1"
+            VLLM_VERSION="v0.20.2"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -136,10 +136,13 @@ jobs:
         env:
           CIBW_BUILD: ${{ matrix.python-version }}-*
           CIBW_BEFORE_BUILD_LINUX: >
-            yum install -y numactl-devel &&
-            uv pip install --system -r requirements/cpu-build.txt
+            yum install -y numactl-devel && if [ -f requirements/build/cpu.txt
+            ]; then uv pip install --system -r requirements/build/cpu.txt; else
+            uv pip install --system -r requirements/cpu-build.txt; fi
           CIBW_BEFORE_BUILD_MACOS: >
-            uv pip install -r requirements/cpu-build.txt
+            if [ -f requirements/build/cpu.txt ]; then uv pip install -r
+            requirements/build/cpu.txt; else uv pip install -r
+            requirements/cpu-build.txt; fi
           CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"
