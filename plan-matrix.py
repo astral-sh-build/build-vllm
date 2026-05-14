@@ -6,7 +6,7 @@ import json
 import os
 
 # Supported Python versions for vLLM CPU builds.
-PYTHON_VERSIONS = ["cp310", "cp311", "cp312", "cp313"]
+PYTHON_VERSIONS = ["cp310", "cp311", "cp312", "cp313", "cp314"]
 
 # Supported operating systems/runners.
 RUNNERS = [
