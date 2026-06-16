@@ -172,15 +172,23 @@ jobs:
             UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
 
-      - name: Embed SBOM into wheel
+      - name: Embed metadata into wheel
         run: |
           for wheel in dist/*.whl; do
             uv run --no-project --script build_scripts/embed_patches.py "$wheel" "build_scripts/patches/${VLLM_VERSION}" \
               --source-repo "https://github.com/vllm-project/vllm" \
               --source-tag "${VLLM_VERSION}" \
               --source-commit "${SOURCE_COMMIT}" \
-              --build-repo "https://github.com/astral-sh/build-vllm" \
-              --build-commit "${BUILD_COMMIT}"
+              --build-repo "https://github.com/astral-sh-build/build-vllm" \
+              --build-commit "${BUILD_COMMIT}" \
+              --license-expression "Apache-2.0 AND BSD-3-Clause AND MIT AND LGPL-2.1-only" \
+              --license-file "LICENSE:LICENSE" \
+              --license-file "build_scripts/licenses/numactl/LGPL-2.1.txt:third-party/numactl/LGPL-2.1.txt" \
+              --license-file "build_scripts/licenses/numactl/SOURCE.txt:third-party/numactl/SOURCE.txt" \
+              --license-file "build_scripts/licenses/numactl/RELINKING.md:third-party/numactl/RELINKING.md" \
+              --license-file "build_scripts/licenses/vllm-derived/MIT.txt:third-party/vllm-derived/MIT.txt" \
+              --license-file "build_scripts/licenses/vllm-derived/BSD-3-Clause.txt:third-party/vllm-derived/BSD-3-Clause.txt" \
+              --license-file "build_scripts/licenses/vllm-derived/SOURCE.txt:third-party/vllm-derived/SOURCE.txt"
           done
         env:
           VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
