@@ -1,0 +1,8 @@
+Component: libnuma from numactl
+Project: numactl
+Source: https://github.com/numactl/numactl
+License source: https://github.com/numactl/numactl/blob/master/LICENSE.LGPL2.1
+
+The Linux vLLM CPU build installs numactl-devel so vLLM can build against
+libnuma. The repaired Linux wheel may include libnuma as an auditwheel-managed
+shared library dependency. This notice is included for those wheels.

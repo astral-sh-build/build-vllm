@@ -1,0 +1,20 @@
+Component: MIT- and BSD-licensed source material in vLLM
+Project: vLLM
+Source: https://github.com/vllm-project/vllm
+
+vLLM is primarily Apache-2.0, but the source tree also contains MIT- and
+BSD-licensed material that may be distributed in, or compiled into, the wheel.
+Known examples in the vLLM v0.22.0 source include:
+
+- `csrc/cpu/float_convert.hpp`, which includes MIT-licensed code copied from
+  PrincetonVision/marvin.
+- `vllm/model_executor/models/phi.py`, which retains MIT notice material from
+  Microsoft Phi code and BSD-3-Clause notice material from Tri Dao.
+- `vllm/model_executor/layers/fla/`, which includes MIT-licensed material from
+  Songlin Yang and Yu Zhang.
+- `vllm/model_executor/layers/mamba/ops/`, which includes BSD-3-Clause notice
+  material from Tri Dao and Albert Gu.
+
+Python source files shipped in the wheel retain their inline notices. This
+managed notice file is included so the wheel also documents the non-Apache
+licenses in its `.dist-info/licenses` directory.
