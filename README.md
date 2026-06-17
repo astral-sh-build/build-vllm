@@ -9,11 +9,11 @@ CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
 `+cpu` local version suffix, such as `vllm==0.22.0+cpu`.
 
 Pre-built wheels are available on
-[Astral's package indexes](https://pub-ca5ccdc72d7a4f9e9f2af5929bdf5083.r2.dev/index.html).
+[Astral's package indexes](https://wheels.astralshosted.com/index.html).
 To install a CPU build:
 
 ```console
-$ uv add vllm --index astral-cpu=https://pub-ca5ccdc72d7a4f9e9f2af5929bdf5083.r2.dev/simple/cpu/
+$ uv add vllm --index astral-cpu=https://wheels.astralshosted.com/simple/cpu/
 ```
 
 This configures the index and uses it as the source for `vllm`:
@@ -24,13 +24,13 @@ vllm = { index = "astral-cpu" }
 
 [[tool.uv.index]]
 name = "astral-cpu"
-url = "https://pub-ca5ccdc72d7a4f9e9f2af5929bdf5083.r2.dev/simple/cpu/"
+url = "https://wheels.astralshosted.com/simple/cpu/"
 ```
 
 Or, with `uv pip`:
 
 ```console
-$ uv pip install --index https://pub-ca5ccdc72d7a4f9e9f2af5929bdf5083.r2.dev/simple/cpu/ vllm
+$ uv pip install --index https://wheels.astralshosted.com/simple/cpu/ vllm
 ```
 
 ## Supported versions
