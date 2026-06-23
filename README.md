@@ -9,8 +9,8 @@ CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
 `+cpu` local version suffix, such as `vllm==0.22.0+cpu`.
 
 Pre-built wheels are available on
-[Astral's package indexes](https://wheels.astral.sh/index.html).
-To install a CPU build:
+[Astral's package indexes](https://wheels.astral.sh/index.html). To install a
+CPU build:
 
 ```console
 $ uv add vllm --index astral-cpu=https://wheels.astral.sh/simple/cpu/
