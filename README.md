@@ -37,7 +37,7 @@ $ uv pip install --index https://wheels.astral.sh/simple/cpu/ vllm
 
 Wheels are available for the following `vllm` versions:
 
-- [`0.22.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.22.0)
+- [`0.22.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.22.0-r1)
 - [`0.21.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.21.0)
 - [`0.20.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.20.2)
 - [`0.20.1`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.20.1)
