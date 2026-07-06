@@ -161,7 +161,8 @@ jobs:
             # v0.24's helper builds both Rust artifacts and requires protoc.
             if [ -f build_rust.sh ]; then
               brew install protobuf
-              CARGO_BUILD_JOBS=4 bash build_rust.sh
+              # Keep Homebrew's host-targeted PCRE2 out of portable wheels.
+              PCRE2_SYS_STATIC=1 CARGO_BUILD_JOBS=4 bash build_rust.sh
             fi
           CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
