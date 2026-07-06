@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.23.0"
+        default: "v0.24.0"
         type: string
   pull_request:
     branches:
@@ -63,14 +63,14 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.23.0 (legacy format; maps directly to vLLM version)
-          # - v0.23.0-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.24.0 (legacy format; maps directly to vLLM version)
+          # - v0.24.0-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${INPUTS_RELEASE_TAG}"
             # Remove -rN suffix if present
             VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
           else
-            VLLM_VERSION="v0.23.0"
+            VLLM_VERSION="v0.24.0"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -130,14 +130,39 @@ jobs:
           python3 -m cibuildwheel --output-dir dist
         env:
           CIBW_BUILD: ${{ matrix.python-version }}-*
-          CIBW_BEFORE_BUILD_LINUX: >
-            yum install -y numactl-devel && if [ -f requirements/build/cpu.txt
-            ]; then uv pip install --system -r requirements/build/cpu.txt; else
-            uv pip install --system -r requirements/cpu-build.txt; fi
-          CIBW_BEFORE_BUILD_MACOS: >
-            if [ -f requirements/build/cpu.txt ]; then uv pip install -r
-            requirements/build/cpu.txt; else uv pip install -r
-            requirements/cpu-build.txt; fi
+          CIBW_BEFORE_BUILD_LINUX: |
+            set -eu
+
+            # Needed by vLLM's protoc, Rust, and vendored OpenSSL builds.
+            yum install -y curl unzip numactl-devel perl-core
+
+            # vLLM moved this file in v0.20; retain the fallback for older releases.
+            requirements_file=requirements/cpu-build.txt
+            if [ -f requirements/build/cpu.txt ]; then
+              requirements_file=requirements/build/cpu.txt
+            fi
+            uv pip install --system -r "${requirements_file}"
+
+            # v0.24's helper builds vllm-rs and _rust_tool_parser in place.
+            if [ -f build_rust.sh ]; then
+              ./tools/install_protoc.sh
+              CARGO_BUILD_JOBS=4 bash build_rust.sh
+            fi
+          CIBW_BEFORE_BUILD_MACOS: |
+            set -eu
+
+            # vLLM moved this file in v0.20; retain the fallback for older releases.
+            requirements_file=requirements/cpu-build.txt
+            if [ -f requirements/build/cpu.txt ]; then
+              requirements_file=requirements/build/cpu.txt
+            fi
+            uv pip install -r "${requirements_file}"
+
+            # v0.24's helper builds both Rust artifacts and requires protoc.
+            if [ -f build_rust.sh ]; then
+              brew install protobuf
+              CARGO_BUILD_JOBS=4 bash build_rust.sh
+            fi
           CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"

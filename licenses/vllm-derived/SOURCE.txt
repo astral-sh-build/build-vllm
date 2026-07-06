@@ -4,7 +4,7 @@ Source: https://github.com/vllm-project/vllm
 
 vLLM is primarily Apache-2.0, but the source tree also contains MIT- and
 BSD-licensed material that may be distributed in, or compiled into, the wheel.
-Known examples in the vLLM v0.22.0 source include:
+Known examples in the vLLM v0.24.0 source include:
 
 - `csrc/cpu/float_convert.hpp`, which includes MIT-licensed code copied from
   PrincetonVision/marvin.
