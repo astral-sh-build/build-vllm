@@ -6,7 +6,7 @@ Python, operating systems, and CPU architectures.
 ## Installation
 
 CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
-`+cpu` local version suffix, such as `vllm==0.22.0+cpu`.
+`+cpu` local version suffix, such as `vllm==0.24.0+cpu`.
 
 Pre-built wheels are available on
 [Astral's package indexes](https://wheels.astral.sh/index.html). To install a
@@ -37,6 +37,9 @@ $ uv pip install --index https://wheels.astral.sh/simple/cpu/ vllm
 
 Wheels are available for the following `vllm` versions:
 
+- [`0.24.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.24.0)
+- [`0.23.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.23.0)
+- [`0.22.1`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.22.1)
 - [`0.22.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.22.0-r1)
 - [`0.21.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.21.0)
 - [`0.20.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.20.2)
@@ -60,7 +63,7 @@ Wheels are available for the following `vllm` versions:
 - [`0.11.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.11.0)
 - [`0.10.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.10.2)
 
-The latest release, vLLM 0.22.0, supports the following combinations:
+The latest release, vLLM 0.24.0, supports the following combinations:
 
 | Operating system | CPU architecture    | Python    |
 | ---------------- | ------------------- | --------- |

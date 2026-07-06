@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.23.0"
+        default: "v0.24.0"
         type: string
   pull_request:
     branches:
@@ -63,14 +63,14 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.23.0 (legacy format; maps directly to vLLM version)
-          # - v0.23.0-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.24.0 (legacy format; maps directly to vLLM version)
+          # - v0.24.0-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${INPUTS_RELEASE_TAG}"
             # Remove -rN suffix if present
             VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
           else
-            VLLM_VERSION="v0.23.0"
+            VLLM_VERSION="v0.24.0"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
