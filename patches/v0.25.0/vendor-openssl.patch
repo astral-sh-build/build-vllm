@@ -1,13 +1,24 @@
-diff --git a/rust/Cargo.toml b/rust/Cargo.toml
-index 435350c0..c10557ff 100644
---- a/rust/Cargo.toml
-+++ b/rust/Cargo.toml
-@@ -61,7 +61,7 @@ native-tls-vendored = { package = "native-tls", version = "0.2.18", features = [
- ndarray = { version = "0.16.1", features = ["serde"] }
- openai-harmony = { package = "oss-harmony", git = "https://github.com/oss-harmony/harmony", tag = "v0.0.11", default-features = false }
- openai-protocol = "1.6.0"
--openssl = "0.10"
-+openssl = { version = "0.10", features = ["vendored"] }
- parking_lot = "0.12.5"
- paste = "1.0.15"
- prometheus-client = "0.24.0"
+diff --git a/rust/src/server/Cargo.toml b/rust/src/server/Cargo.toml
+index d046be12..9d7c8c81 100644
+--- a/rust/src/server/Cargo.toml
++++ b/rust/src/server/Cargo.toml
+@@ -17,7 +17,6 @@ indexmap.workspace = true
+ itertools.workspace = true
+ libc.workspace = true
+ llm-multimodal.workspace = true
+-openssl.workspace = true
+ prost.workspace = true
+ prost-types.workspace = true
+ rmpv.workspace = true
+@@ -51,6 +50,12 @@ vllm-llm.workspace = true
+ vllm-metrics.workspace = true
+ vllm-text.workspace = true
+
++[target.'cfg(target_os = "macos")'.dependencies]
++openssl = { workspace = true, features = ["vendored"] }
++
++[target.'cfg(not(target_os = "macos"))'.dependencies]
++openssl.workspace = true
++
+ [build-dependencies]
+ tonic-prost-build.workspace = true
