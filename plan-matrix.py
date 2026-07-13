@@ -15,6 +15,10 @@ RUNNERS = [
     ("macos-latest", "macos"),
 ]
 
+# Exercise one Linux and one macOS build on pull requests by default.
+PR_SMOKE_RUNNERS = {"depot-ubuntu-24.04", "macos-latest"}
+PR_SMOKE_PYTHON = PYTHON_VERSIONS[-1]
+
 
 def main() -> None:
     rows = []
@@ -28,7 +32,12 @@ def main() -> None:
             rows.append(row)
 
     if os.environ.get("LIMIT_MATRIX") == "1":
-        rows = rows[:1]
+        rows = [
+            row
+            for row in rows
+            if row["RUNNER"] in PR_SMOKE_RUNNERS
+            and row["python-version"] == PR_SMOKE_PYTHON
+        ]
 
     print(json.dumps(rows))
 
