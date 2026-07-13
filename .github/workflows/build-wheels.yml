@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.24.0"
+        default: "v0.25.0"
         type: string
   pull_request:
     branches:
@@ -63,14 +63,14 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.24.0 (legacy format; maps directly to vLLM version)
-          # - v0.24.0-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.25.0 (legacy format; maps directly to vLLM version)
+          # - v0.25.0-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${INPUTS_RELEASE_TAG}"
             # Remove -rN suffix if present
             VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
           else
-            VLLM_VERSION="v0.24.0"
+            VLLM_VERSION="v0.25.0"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -143,7 +143,7 @@ jobs:
             fi
             uv pip install --system -r "${requirements_file}"
 
-            # v0.24's helper builds vllm-rs and _rust_tool_parser in place.
+            # v0.24 and later build vllm-rs and _rust_tool_parser in place.
             if [ -f build_rust.sh ]; then
               ./tools/install_protoc.sh
               CARGO_BUILD_JOBS=4 bash build_rust.sh
@@ -158,7 +158,7 @@ jobs:
             fi
             uv pip install -r "${requirements_file}"
 
-            # v0.24's helper builds both Rust artifacts and requires protoc.
+            # v0.24 and later build both Rust artifacts and require protoc.
             if [ -f build_rust.sh ]; then
               brew install protobuf
               # Keep Homebrew's host-targeted PCRE2 out of portable wheels.
