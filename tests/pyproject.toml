@@ -1,0 +1,44 @@
+[project]
+name = "build-vllm-gpu-tests"
+version = "0.1.0"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "nvidia-ml-py>=12",
+    "numpy>=1.24,<3",
+    "pytest>=8,<10",
+    "torchaudio==2.11.0+cpu",
+    "torch==2.11.0+cpu",
+    "torchcodec==0.14.0+cpu",
+    "torchvision==0.26.0+cpu",
+    "vllm==0.25.0+cpu",
+]
+
+[tool.uv]
+environments = ["sys_platform == 'linux' and platform_machine == 'x86_64'"]
+
+[tool.uv.sources]
+vllm = { index = "astral-cpu" }
+torch = { index = "pytorch-cpu" }
+torchaudio = { index = "pytorch-cpu" }
+torchcodec = { index = "pytorch-cpu" }
+torchvision = { index = "pytorch-cpu" }
+
+[[tool.uv.index]]
+name = "astral-cu128"
+url = "https://wheels.astral.sh/simple/cu128/"
+explicit = true
+
+[[tool.uv.index]]
+name = "astral-cpu"
+url = "https://wheels.astral.sh/simple/cpu/"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[[tool.uv.index]]
+name = "pytorch-cpu"
+url = "https://download.pytorch.org/whl/cpu"
+explicit = true
