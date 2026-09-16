@@ -8,13 +8,15 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.25.0"
+        default: "v0.25.1"
         type: string
   pull_request:
     branches:
       - main
+      - "charlie/vllm-*"
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || inputs.release_tag || github.sha }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number ||
+    inputs.release_tag || github.sha }}
   cancel-in-progress: true
 
 jobs:
@@ -42,7 +44,9 @@ jobs:
         run: |
           echo "matrix=$(uv run --script plan-matrix.py)" >> $GITHUB_OUTPUT
         env:
-          LIMIT_MATRIX: ${{ github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'full-build') && '1' || '0' }}
+          LIMIT_MATRIX: ${{ github.event_name == 'pull_request' &&
+            !contains(github.event.pull_request.labels.*.name, 'full-build') &&
+            '1' || '0' }}
 
   build_wheels:
     name: Build wheels on ${{ matrix.RUNNER }} (${{ matrix.python-version }})
@@ -63,14 +67,14 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.25.0 (legacy format; maps directly to vLLM version)
-          # - v0.25.0-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.25.1 (legacy format; maps directly to vLLM version)
+          # - v0.25.1-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${INPUTS_RELEASE_TAG}"
             # Remove -rN suffix if present
             VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
           else
-            VLLM_VERSION="v0.25.0"
+            VLLM_VERSION="v0.25.1"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -183,14 +187,14 @@ jobs:
             {wheel}"
           CIBW_ENVIRONMENT_LINUX: VLLM_TARGET_DEVICE=cpu
             UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
-            UV_INDEX_STRATEGY=unsafe-best-match
-            VLLM_CPU_AVX512BF16=false
-            VLLM_CPU_AVX512VNNI=false
-            VLLM_CPU_DISABLE_AVX512=true
-            SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
-          CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu
-            UV_INDEX_STRATEGY=unsafe-best-match
-            SETUPTOOLS_SCM_PRETEND_VERSION=${{ steps.vllm-version.outputs.version }}
+            UV_INDEX_STRATEGY=unsafe-best-match VLLM_CPU_AVX512BF16=false
+            VLLM_CPU_AVX512VNNI=false VLLM_CPU_DISABLE_AVX512=true
+            SETUPTOOLS_SCM_PRETEND_VERSION=${{
+            steps.vllm-version.outputs.version }}
+          CIBW_ENVIRONMENT_MACOS:
+            VLLM_TARGET_DEVICE=cpu UV_INDEX_STRATEGY=unsafe-best-match
+            SETUPTOOLS_SCM_PRETEND_VERSION=${{
+            steps.vllm-version.outputs.version }}
 
       - name: Embed metadata into wheel
         run: |
@@ -239,8 +243,6 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: >-
-          gh release create "${RELEASE_TAG}" ./dist/*.whl
-          --target "${GITHUB_SHA}"
-          --title "${RELEASE_TAG}"
-          --notes ""
-          --repo "${GITHUB_REPOSITORY}"
+          gh release create "${RELEASE_TAG}" ./dist/*.whl --target
+          "${GITHUB_SHA}" --title "${RELEASE_TAG}" --notes "" --repo
+          "${GITHUB_REPOSITORY}"
