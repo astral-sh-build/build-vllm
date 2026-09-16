@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.28.0"
+        default: "v0.29.0"
         type: string
   pull_request:
     branches:
@@ -67,14 +67,14 @@ jobs:
         id: vllm-version
         run: |
           # Extract vLLM version from tag. Tags can be either:
-          # - v0.28.0 (legacy format; maps directly to vLLM version)
-          # - v0.28.0-r1 (new format; strip -rN suffix to get vLLM version)
+          # - v0.29.0 (legacy format; maps directly to vLLM version)
+          # - v0.29.0-r1 (new format; strip -rN suffix to get vLLM version)
           if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
             TAG="${INPUTS_RELEASE_TAG}"
             # Remove -rN suffix if present
             VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
           else
-            VLLM_VERSION="v0.28.0"
+            VLLM_VERSION="v0.29.0"
           fi
           echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
           echo "Using vLLM version: ${VLLM_VERSION}"
@@ -149,7 +149,10 @@ jobs:
 
             # v0.24 and later build vllm-rs and _rust_tool_parser in place.
             if [ -f build_rust.sh ]; then
-              ./tools/install_protoc.sh
+              # v0.29 and later compile protobufs in Rust without protoc.
+              if [ -f tools/install_protoc.sh ]; then
+                ./tools/install_protoc.sh
+              fi
               CARGO_BUILD_JOBS=4 bash build_rust.sh
             fi
           CIBW_BEFORE_BUILD_MACOS: |
@@ -162,9 +165,11 @@ jobs:
             fi
             uv pip install -r "${requirements_file}"
 
-            # v0.24 and later build both Rust artifacts and require protoc.
+            # v0.24 and later build both Rust artifacts.
             if [ -f build_rust.sh ]; then
-              brew install protobuf
+              if [ -f tools/install_protoc.sh ]; then
+                brew install protobuf
+              fi
               # Keep Homebrew's host-targeted PCRE2 out of portable wheels.
               PCRE2_SYS_STATIC=1 CARGO_BUILD_JOBS=4 bash build_rust.sh
             fi
