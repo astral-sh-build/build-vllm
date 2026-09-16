@@ -6,7 +6,7 @@ Python, operating systems, and CPU architectures.
 ## Installation
 
 CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
-`+cpu` local version suffix, such as `vllm==0.25.0+cpu`.
+`+cpu` local version suffix, such as `vllm==0.25.1+cpu`.
 
 Pre-built wheels are available on
 [Astral's package indexes](https://wheels.astral.sh/index.html). To install a
@@ -35,8 +35,9 @@ $ uv pip install --index https://wheels.astral.sh/simple/cpu/ vllm
 
 ## GPU tests
 
-The `tests/` directory contains a locked uv project that installs the published CPU wheel from the Astral index
-alongside its matching CUDA-enabled PyTorch build. Run the tests on a Modal GPU with:
+The `tests/` directory contains a locked uv project that installs the published
+CPU wheel from the Astral index alongside its matching CUDA-enabled PyTorch
+build. Run the tests on a Modal GPU with:
 
 ```console
 $ modal run tests/modal_app.py
@@ -49,6 +50,7 @@ suite on an NVIDIA A10G. The wheel is not installed on the local machine.
 
 Wheels are available for the following `vllm` versions:
 
+- [`0.25.1`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.25.1)
 - [`0.25.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.25.0)
 - [`0.24.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.24.0)
 - [`0.23.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.23.0)
@@ -76,7 +78,7 @@ Wheels are available for the following `vllm` versions:
 - [`0.11.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.11.0)
 - [`0.10.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.10.2)
 
-The latest release, vLLM 0.25.0, supports the following combinations:
+The latest release, vLLM 0.25.1, supports the following combinations:
 
 | Operating system | CPU architecture    | Python    |
 | ---------------- | ------------------- | --------- |
