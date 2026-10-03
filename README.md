@@ -50,7 +50,7 @@ suite on an NVIDIA A10G. The wheel is not installed on the local machine.
 
 Wheels are available for the following `vllm` versions:
 
-- [`0.29.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.30.0)
+- [`0.29.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.31.0)
 - [`0.28.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.28.0)
 - [`0.27.1`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.27.1)
 - [`0.27.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.27.0)
