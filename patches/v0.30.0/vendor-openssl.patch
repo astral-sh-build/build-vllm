@@ -1,0 +1,23 @@
+--- a/rust/src/server/Cargo.toml
++++ b/rust/src/server/Cargo.toml
+@@ -18,7 +18,6 @@
+ itertools.workspace = true
+ libc.workspace = true
+ llm-multimodal.workspace = true
+-openssl.workspace = true
+ prost-types.workspace = true
+ rmp-serde.workspace = true
+ rmpv.workspace = true
+@@ -53,6 +52,12 @@
+ vllm-proto.workspace = true
+ vllm-text.workspace = true
+ 
++[target.'cfg(target_os = "macos")'.dependencies]
++openssl = { workspace = true, features = ["vendored"] }
++
++[target.'cfg(not(target_os = "macos"))'.dependencies]
++openssl.workspace = true
++
+ [dev-dependencies]
+ anyhow.workspace = true
+ async-openai = { workspace = true, features = ["full"] }
