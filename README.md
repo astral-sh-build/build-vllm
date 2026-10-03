@@ -107,6 +107,12 @@ The workflow verifies that the tag points to its build commit before building.
 Pinning the tag also lets the workflow publish after `main` advances, without
 requiring a token with workflow-write access.
 
+If every wheel build succeeded but publishing failed, dispatch
+`publish-wheels.yml` with the existing `release_tag` and original
+`build_run_id`. The publishing workflow checks the build's commit, workflow, and
+successful wheel jobs before downloading its artifacts. It verifies the wheel
+count and publishes without changing the tag or rebuilding the wheels.
+
 ## License
 
 build-vllm is licensed under the [Apache License, Version 2.0](LICENSE).
