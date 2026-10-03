@@ -198,7 +198,7 @@ jobs:
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
           CIBW_ENVIRONMENT_MACOS:
-            VLLM_TARGET_DEVICE=cpu UV_INDEX_STRATEGY=unsafe-best-match
+            VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1 UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
 
