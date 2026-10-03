@@ -30,6 +30,19 @@ jobs:
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
+      - name: Verify release tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          tag_commit=$(gh api "repos/${GITHUB_REPOSITORY}/commits/refs/tags/${RELEASE_TAG}" --jq .sha)
+          if [ "${tag_commit}" != "${GITHUB_SHA}" ]; then
+            echo "::error::Create the release tag at the build commit before dispatching the workflow."
+            exit 1
+          fi
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
@@ -197,8 +210,8 @@ jobs:
             VLLM_CPU_AVX512VNNI=false VLLM_CPU_DISABLE_AVX512=true
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
-          CIBW_ENVIRONMENT_MACOS:
-            VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1 UV_INDEX_STRATEGY=unsafe-best-match
+          CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1
+            UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
 
@@ -249,6 +262,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: >-
-          gh release create "${RELEASE_TAG}" ./dist/*.whl --target
-          "${GITHUB_SHA}" --title "${RELEASE_TAG}" --notes "" --repo
-          "${GITHUB_REPOSITORY}"
+          gh release create "${RELEASE_TAG}" ./dist/*.whl --verify-tag --title
+          "${RELEASE_TAG}" --notes "" --repo "${GITHUB_REPOSITORY}"
