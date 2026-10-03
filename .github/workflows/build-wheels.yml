@@ -16,7 +16,8 @@ on:
       - "charlie/gpu-audit-*"
       - "charlie/vllm-*"
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number ||
+  group:
+    ${{ github.workflow }}-${{ github.event.pull_request.number ||
     inputs.release_tag || github.sha }}
   cancel-in-progress: true
 
@@ -30,6 +31,19 @@ jobs:
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
     steps:
+      - name: Verify release tag
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+        run: |
+          set -euo pipefail
+          tag_commit=$(gh api "repos/${GITHUB_REPOSITORY}/commits/refs/tags/${RELEASE_TAG}" --jq .sha)
+          if [ "${tag_commit}" != "${GITHUB_SHA}" ]; then
+            echo "::error::Create the release tag at the build commit before dispatching the workflow."
+            exit 1
+          fi
+
       - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           persist-credentials: false
@@ -45,7 +59,8 @@ jobs:
         run: |
           echo "matrix=$(uv run --script plan-matrix.py)" >> $GITHUB_OUTPUT
         env:
-          LIMIT_MATRIX: ${{ github.event_name == 'pull_request' &&
+          LIMIT_MATRIX:
+            ${{ github.event_name == 'pull_request' &&
             !contains(github.event.pull_request.labels.*.name, 'full-build') &&
             '1' || '0' }}
 
@@ -174,7 +189,8 @@ jobs:
               # Keep Homebrew's host-targeted PCRE2 out of portable wheels.
               PCRE2_SYS_STATIC=1 CARGO_BUILD_JOBS=4 bash build_rust.sh
             fi
-          CIBW_BUILD_FRONTEND: "build[uv]; args: --no-isolation --skip-dependency-check"
+          CIBW_BUILD_FRONTEND:
+            "build[uv]; args: --no-isolation --skip-dependency-check"
           CIBW_ARCHS: native
           CIBW_SKIP: "*musllinux*"
           CIBW_REPAIR_WHEEL_COMMAND_LINUX:
@@ -191,14 +207,16 @@ jobs:
           CIBW_REPAIR_WHEEL_COMMAND_MACOS:
             "delocate-wheel --ignore-missing-dependencies -w {dest_dir} -v
             {wheel}"
-          CIBW_ENVIRONMENT_LINUX: VLLM_TARGET_DEVICE=cpu
+          CIBW_ENVIRONMENT_LINUX:
+            VLLM_TARGET_DEVICE=cpu
             UV_EXTRA_INDEX_URL=https://download.pytorch.org/whl/cpu
             UV_INDEX_STRATEGY=unsafe-best-match VLLM_CPU_AVX512BF16=false
             VLLM_CPU_AVX512VNNI=false VLLM_CPU_DISABLE_AVX512=true
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
           CIBW_ENVIRONMENT_MACOS:
-            VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1 UV_INDEX_STRATEGY=unsafe-best-match
+            VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1
+            UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
             steps.vllm-version.outputs.version }}
 
@@ -249,6 +267,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           RELEASE_TAG: ${{ inputs.release_tag }}
         run: >-
-          gh release create "${RELEASE_TAG}" ./dist/*.whl --target
-          "${GITHUB_SHA}" --title "${RELEASE_TAG}" --notes "" --repo
-          "${GITHUB_REPOSITORY}"
+          gh release create "${RELEASE_TAG}" ./dist/*.whl --verify-tag --title
+          "${RELEASE_TAG}" --notes "" --repo "${GITHUB_REPOSITORY}"

@@ -6,7 +6,7 @@ Python, operating systems, and CPU architectures.
 ## Installation
 
 CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
-`+cpu` local version suffix, such as `vllm==0.29.0+cpu`.
+`+cpu` local version suffix, such as `vllm==0.31.0+cpu`.
 
 Pre-built wheels are available on
 [Astral's package indexes](https://wheels.astral.sh/index.html). To install a
@@ -50,7 +50,9 @@ suite on an NVIDIA A10G. The wheel is not installed on the local machine.
 
 Wheels are available for the following `vllm` versions:
 
-- [`0.29.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.31.0)
+- [`0.31.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.31.0)
+- [`0.30.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.30.0)
+- [`0.29.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.29.0)
 - [`0.28.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.28.0)
 - [`0.27.1`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.27.1)
 - [`0.27.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.27.0)
@@ -83,12 +85,27 @@ Wheels are available for the following `vllm` versions:
 - [`0.11.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.11.0)
 - [`0.10.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.10.2)
 
-The latest release, vLLM 0.29.0, supports the following combinations:
+The latest release, vLLM 0.31.0, supports the following combinations:
 
 | Operating system | CPU architecture    | Python    |
 | ---------------- | ------------------- | --------- |
 | Linux            | `x86_64`, `aarch64` | 3.10–3.14 |
 | macOS            | `arm64`             | 3.10–3.14 |
+
+## Publishing a release
+
+Create the release tag at the validated build commit before starting the
+workflow:
+
+```console
+$ git tag v0.31.0 <build-commit>
+$ git push origin refs/tags/v0.31.0
+$ gh workflow run build-wheels.yml --ref v0.31.0 -f release_tag=v0.31.0
+```
+
+The workflow verifies that the tag points to its build commit before building.
+Pinning the tag also lets the workflow publish after `main` advances, without
+requiring a token with workflow-write access.
 
 ## License
 
