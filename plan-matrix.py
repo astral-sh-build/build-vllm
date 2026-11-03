@@ -6,7 +6,7 @@ import json
 import os
 
 # Supported Python versions for vLLM CPU builds.
-PYTHON_VERSIONS = ["cp310", "cp311", "cp312", "cp313", "cp314"]
+PYTHON_VERSIONS = ["cp311", "cp312", "cp313", "cp314"]
 
 # Supported operating systems/runners.
 RUNNERS = [
@@ -21,9 +21,15 @@ PR_SMOKE_PYTHON = PYTHON_VERSIONS[-1]
 
 
 def main() -> None:
+    version = os.environ.get("VLLM_VERSION", "v0.32.0")
+    major, minor, _ = version.removeprefix("v").split(".")
+    python_versions = PYTHON_VERSIONS
+    if (int(major), int(minor)) < (0, 32):
+        python_versions = ["cp310", *python_versions]
+
     rows = []
     for runner, platform in RUNNERS:
-        for python_version in PYTHON_VERSIONS:
+        for python_version in python_versions:
             row = {
                 "RUNNER": runner,
                 "python-version": python_version,

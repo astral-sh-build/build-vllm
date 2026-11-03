@@ -85,12 +85,12 @@ Wheels are available for the following `vllm` versions:
 - [`0.11.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.11.0)
 - [`0.10.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.10.2)
 
-The latest release, vLLM 0.31.0, supports the following combinations:
+The build workflow targets vLLM 0.32.0 with PyTorch 2.13.0.
 
 | Operating system | CPU architecture    | Python    |
 | ---------------- | ------------------- | --------- |
-| Linux            | `x86_64`, `aarch64` | 3.10–3.14 |
-| macOS            | `arm64`             | 3.10–3.14 |
+| Linux            | `x86_64`, `aarch64` | 3.11–3.14 |
+| macOS            | `arm64`             | 3.11–3.14 |
 
 ## Publishing a release
 
@@ -98,9 +98,9 @@ Create the release tag at the validated build commit before starting the
 workflow:
 
 ```console
-$ git tag v0.31.0 <build-commit>
-$ git push origin refs/tags/v0.31.0
-$ gh workflow run build-wheels.yml --ref v0.31.0 -f release_tag=v0.31.0
+$ git tag v0.32.0 <build-commit>
+$ git push origin refs/tags/v0.32.0
+$ gh workflow run build-wheels.yml --ref v0.32.0 -f release_tag=v0.32.0
 ```
 
 The workflow verifies that the tag points to its build commit before building.
