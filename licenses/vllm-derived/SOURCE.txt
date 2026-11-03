@@ -4,12 +4,12 @@ Source: https://github.com/vllm-project/vllm
 
 vLLM is primarily Apache-2.0, but the source tree also contains MIT- and
 BSD-licensed material that may be distributed in, or compiled into, the wheel.
-Known examples in the vLLM v0.31.0 source include:
+Known examples in the vLLM v0.32.0 source include:
 
 - `csrc/cpu/float_convert.hpp`, which includes MIT-licensed code copied from
   PrincetonVision/marvin.
-- `vllm/model_executor/models/phi.py`, which retains MIT notice material from
-  Microsoft Phi code and BSD-3-Clause notice material from Tri Dao.
+- `vllm/model_executor/models/phi4mm_audio.py`, which includes MIT-licensed
+  code from Microsoft/MoE.
 - `vllm/third_party/flash_linear_attention/`, which includes MIT-licensed material
   from Songlin Yang and Yu Zhang.
 - `vllm/model_executor/layers/mamba/ops/`, which includes BSD-3-Clause notice

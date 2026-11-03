@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.31.0"
+        default: "v0.32.0"
         type: string
   pull_request:
     branches:
@@ -29,6 +29,7 @@ jobs:
       contents: read
     outputs:
       matrix: ${{ steps.generate-matrix.outputs.matrix }}
+      version: ${{ steps.generate-matrix.outputs.version }}
     steps:
       - name: Verify release tag
         if: github.event_name == 'workflow_dispatch'
@@ -56,8 +57,14 @@ jobs:
       - name: Generate build matrix
         id: generate-matrix
         run: |
-          echo "matrix=$(uv run --script plan-matrix.py)" >> $GITHUB_OUTPUT
+          # Strip the build revision from tags such as v0.32.0-r1.
+          VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<< "$RELEASE_TAG")
+          export VLLM_VERSION
+          matrix=$(uv run --script plan-matrix.py)
+          echo "version=$VLLM_VERSION" >> "$GITHUB_OUTPUT"
+          echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
         env:
+          RELEASE_TAG: ${{ inputs.release_tag || 'v0.32.0' }}
           LIMIT_MATRIX: ${{ github.event_name == 'pull_request' &&
             !contains(github.event.pull_request.labels.*.name, 'full-build') &&
             '1' || '0' }}
@@ -77,30 +84,11 @@ jobs:
         include: ${{ fromJSON(needs.plan-matrix.outputs.matrix) }}
 
     steps:
-      - name: Determine vLLM version
-        id: vllm-version
-        run: |
-          # Extract vLLM version from tag. Tags can be either:
-          # - v0.31.0 (legacy format; maps directly to vLLM version)
-          # - v0.31.0-r1 (new format; strip -rN suffix to get vLLM version)
-          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
-            TAG="${INPUTS_RELEASE_TAG}"
-            # Remove -rN suffix if present
-            VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<<"${TAG}")
-          else
-            VLLM_VERSION="v0.31.0"
-          fi
-          echo "version=${VLLM_VERSION}" >> $GITHUB_OUTPUT
-          echo "Using vLLM version: ${VLLM_VERSION}"
-        env:
-          GITHUB_EVENT_NAME: ${{ github.event_name }}
-          INPUTS_RELEASE_TAG: ${{ inputs.release_tag }}
-
       - name: Checkout vllm
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
         with:
           repository: vllm-project/vllm
-          ref: ${{ steps.vllm-version.outputs.version }}
+          ref: ${{ needs.plan-matrix.outputs.version }}
           fetch-tags: true
           persist-credentials: false
 
@@ -121,7 +109,7 @@ jobs:
             done
           fi
         env:
-          VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
+          VLLM_VERSION: ${{ needs.plan-matrix.outputs.version }}
 
       - name: Get source commit SHA
         id: source-commit
@@ -161,8 +149,9 @@ jobs:
             fi
             uv pip install --system -r "${requirements_file}"
 
-            # v0.24 and later build vllm-rs and _rust_tool_parser in place.
-            if [ -f build_rust.sh ]; then
+            if [ -f tools/build_rust.sh ]; then
+              CARGO_BUILD_JOBS=4 bash tools/build_rust.sh
+            elif [ -f build_rust.sh ]; then
               # v0.29 and later compile protobufs in Rust without protoc.
               if [ -f tools/install_protoc.sh ]; then
                 ./tools/install_protoc.sh
@@ -179,8 +168,9 @@ jobs:
             fi
             uv pip install -r "${requirements_file}"
 
-            # v0.24 and later build both Rust artifacts.
-            if [ -f build_rust.sh ]; then
+            if [ -f tools/build_rust.sh ]; then
+              CARGO_BUILD_JOBS=4 bash tools/build_rust.sh
+            elif [ -f build_rust.sh ]; then
               if [ -f tools/install_protoc.sh ]; then
                 brew install protobuf
               fi
@@ -209,11 +199,11 @@ jobs:
             UV_INDEX_STRATEGY=unsafe-best-match VLLM_CPU_AVX512BF16=false
             VLLM_CPU_AVX512VNNI=false VLLM_CPU_DISABLE_AVX512=true
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
-            steps.vllm-version.outputs.version }}
+            needs.plan-matrix.outputs.version }}
           CIBW_ENVIRONMENT_MACOS: VLLM_TARGET_DEVICE=cpu PCRE2_SYS_STATIC=1
             UV_INDEX_STRATEGY=unsafe-best-match
             SETUPTOOLS_SCM_PRETEND_VERSION=${{
-            steps.vllm-version.outputs.version }}
+            needs.plan-matrix.outputs.version }}
 
       - name: Embed metadata into wheel
         run: |
@@ -234,7 +224,7 @@ jobs:
               --license-file "build_scripts/licenses/vllm-derived/SOURCE.txt:third-party/vllm-derived/SOURCE.txt"
           done
         env:
-          VLLM_VERSION: ${{ steps.vllm-version.outputs.version }}
+          VLLM_VERSION: ${{ needs.plan-matrix.outputs.version }}
           SOURCE_COMMIT: ${{ steps.source-commit.outputs.sha }}
           BUILD_COMMIT: ${{ github.event.pull_request.head.sha || github.sha }}
 
