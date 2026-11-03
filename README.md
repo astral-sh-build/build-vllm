@@ -6,7 +6,7 @@ Python, operating systems, and CPU architectures.
 ## Installation
 
 CPU wheels are published to Astral's dedicated CPU index. Each wheel has a
-`+cpu` local version suffix, such as `vllm==0.31.0+cpu`.
+`+cpu` local version suffix, such as `vllm==0.32.0+cpu`.
 
 Pre-built wheels are available on
 [Astral's package indexes](https://wheels.astral.sh/index.html). To install a
@@ -33,6 +33,9 @@ Or, with `uv pip`:
 $ uv pip install --index https://wheels.astral.sh/simple/cpu/ vllm
 ```
 
+In vLLM 0.33.0, the `vllm-rs` executable on macOS uses Homebrew's OpenSSL 4.
+Install it with `brew install openssl@4` to use the Rust CLI.
+
 ## GPU tests
 
 The `tests/` directory contains a locked uv project that installs the published
@@ -50,6 +53,7 @@ suite on an NVIDIA A10G. The wheel is not installed on the local machine.
 
 Wheels are available for the following `vllm` versions:
 
+- [`0.32.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.32.0)
 - [`0.31.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.31.0)
 - [`0.30.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.30.0)
 - [`0.29.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.29.0)
@@ -85,7 +89,7 @@ Wheels are available for the following `vllm` versions:
 - [`0.11.0`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.11.0)
 - [`0.10.2`](https://github.com/astral-sh-build/build-vllm/releases/tag/v0.10.2)
 
-The build workflow targets vLLM 0.32.0 with PyTorch 2.13.0.
+The build workflow targets vLLM 0.33.0 with PyTorch 2.14.0.
 
 | Operating system | CPU architecture    | Python    |
 | ---------------- | ------------------- | --------- |
@@ -98,9 +102,9 @@ Create the release tag at the validated build commit before starting the
 workflow:
 
 ```console
-$ git tag v0.32.0 <build-commit>
-$ git push origin refs/tags/v0.32.0
-$ gh workflow run build-wheels.yml --ref v0.32.0 -f release_tag=v0.32.0
+$ git tag v0.33.0 <build-commit>
+$ git push origin refs/tags/v0.33.0
+$ gh workflow run build-wheels.yml --ref v0.33.0 -f release_tag=v0.33.0
 ```
 
 The workflow verifies that the tag points to its build commit before building.

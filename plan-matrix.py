@@ -21,7 +21,7 @@ PR_SMOKE_PYTHON = PYTHON_VERSIONS[-1]
 
 
 def main() -> None:
-    version = os.environ.get("VLLM_VERSION", "v0.32.0")
+    version = os.environ.get("VLLM_VERSION", "v0.33.0")
     major, minor, _ = version.removeprefix("v").split(".")
     python_versions = PYTHON_VERSIONS
     if (int(major), int(minor)) < (0, 32):
