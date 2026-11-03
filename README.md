@@ -33,6 +33,9 @@ Or, with `uv pip`:
 $ uv pip install --index https://wheels.astral.sh/simple/cpu/ vllm
 ```
 
+In vLLM 0.33.0, the `vllm-rs` executable on macOS uses Homebrew's OpenSSL 4.
+Install it with `brew install openssl@4` to use the Rust CLI.
+
 ## GPU tests
 
 The `tests/` directory contains a locked uv project that installs the published
