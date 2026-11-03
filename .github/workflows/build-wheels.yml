@@ -8,7 +8,7 @@ on:
       release_tag:
         description: "Release tag"
         required: true
-        default: "v0.32.0"
+        default: "v0.33.0"
         type: string
   pull_request:
     branches:
@@ -57,14 +57,14 @@ jobs:
       - name: Generate build matrix
         id: generate-matrix
         run: |
-          # Strip the build revision from tags such as v0.32.0-r1.
+          # Strip the build revision from tags such as v0.33.0-r1.
           VLLM_VERSION=$(sed -E 's/-r[0-9]+$//' <<< "$RELEASE_TAG")
           export VLLM_VERSION
           matrix=$(uv run --script plan-matrix.py)
           echo "version=$VLLM_VERSION" >> "$GITHUB_OUTPUT"
           echo "matrix=$matrix" >> "$GITHUB_OUTPUT"
         env:
-          RELEASE_TAG: ${{ inputs.release_tag || 'v0.32.0' }}
+          RELEASE_TAG: ${{ inputs.release_tag || 'v0.33.0' }}
           LIMIT_MATRIX: ${{ github.event_name == 'pull_request' &&
             !contains(github.event.pull_request.labels.*.name, 'full-build') &&
             '1' || '0' }}
